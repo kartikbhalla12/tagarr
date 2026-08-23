@@ -1,0 +1,27 @@
+services:
+  tagarr:
+    image: ghcr.io/YOUR_GITHUB_USERNAME/tagarr:latest
+    container_name: tagarr
+    restart: unless-stopped
+    environment:
+      QBIT_URL: "http://qbittorrent:8080"
+      QBIT_USERNAME: "dummy_username"
+      QBIT_PASSWORD: "dummy_password"
+      CHECK_INTERVAL: "60"
+      TRACKER_TAG_RULES: |
+        [
+          {
+            "match": "torrentleech",
+            "tag": "torrentleech"
+          },
+          {
+            "match": "tracker-example.com",
+            "tag": "example"
+          }
+        ]
+    networks:
+      - downloads
+
+networks:
+  downloads:
+    external: true

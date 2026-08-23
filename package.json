@@ -1,0 +1,14 @@
+{
+  "name": "tagarr",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tag qBittorrent torrents from tracker URLs",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

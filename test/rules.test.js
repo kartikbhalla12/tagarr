@@ -11,13 +11,13 @@ describe("parseRules", () => {
   it("parses a JSON array of match/tag rules", () => {
     const rules = parseRules(`
       [
-        { "match": "TorrentLeech", "tag": " torrentleech " },
+        { "match": "PrivateTracker", "tag": " private " },
         { "match": "tracker.example.com", "tag": "example" }
       ]
     `);
 
     assert.deepEqual(rules, [
-      { match: "torrentleech", tag: "torrentleech" },
+      { match: "privatetracker", tag: "private" },
       { match: "tracker.example.com", tag: "example" },
     ]);
   });
@@ -49,18 +49,18 @@ describe("parseRules", () => {
 
 describe("findMatchingTags", () => {
   const rules = [
-    { match: "torrentleech", tag: "torrentleech" },
+    { match: "privatetracker", tag: "private" },
     { match: "tracker.example.com", tag: "example" },
     { match: "tracker.example.com", tag: "private" },
   ];
 
   it("matches tracker URLs case-insensitively by substring", () => {
     const tags = findMatchingTags(
-      [{ url: "https://Tracker.TorrentLeech.org/announce" }],
+      [{ url: "https://Tracker.PrivateTracker.example/announce" }],
       rules
     );
 
-    assert.deepEqual([...tags], ["torrentleech"]);
+    assert.deepEqual([...tags], ["private"]);
   });
 
   it("can apply multiple tags from one tracker", () => {
@@ -89,9 +89,9 @@ describe("findMatchingTags", () => {
 
 describe("parseExistingTags", () => {
   it("splits a comma-separated qBittorrent tag string", () => {
-    assert.deepEqual(parseExistingTags("sonarr, torrentleech"), new Set([
+    assert.deepEqual(parseExistingTags("sonarr, private"), new Set([
       "sonarr",
-      "torrentleech",
+      "private",
     ]));
   });
 

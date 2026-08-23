@@ -55,7 +55,7 @@ function startMockQbit() {
       res.setHeader("Content-Type", "application/json");
       res.end(
         JSON.stringify([
-          { url: "https://tracker.torrentleech.org/announce" },
+          { url: "https://tracker.example.com/announce" },
         ])
       );
       return;
@@ -136,13 +136,13 @@ describe("QbitClient", () => {
     });
 
     await client.login();
-    await client.addTags("abc", ["torrentleech", "example"]);
+    await client.addTags("abc", ["private", "example"]);
 
     const add = mock.calls.find((call) => call.path === "/api/v2/torrents/addTags");
     const params = new URLSearchParams(add.body);
 
     assert.equal(params.get("hashes"), "abc");
-    assert.equal(params.get("tags"), "torrentleech,example");
+    assert.equal(params.get("tags"), "private,example");
   });
 
   it("re-logs in after a 403 session expiry", async () => {
@@ -170,5 +170,29 @@ describe("QbitClient", () => {
     });
 
     await assert.rejects(() => client.login(), /qBittorrent login failed/);
+  });
+
+  it("wraps a network failure with the request URL", async () => {
+    const client = new QbitClient({
+      url: "http://qbittorrent:8080",
+      username: "admin",
+      password: "secret",
+      fetchImpl: async () => {
+        throw new Error("fetch failed", {
+          cause: Object.assign(new Error("getaddrinfo ENOTFOUND qbittorrent"), {
+            code: "ENOTFOUND",
+          }),
+        });
+      },
+    });
+
+    await assert.rejects(async () => {
+      await client.login();
+    }, (error) => {
+      assert.match(error.message, /http:\/\/qbittorrent:8080\/api\/v2\/auth\/login/);
+      assert.equal(error.cause.message, "fetch failed");
+      assert.equal(error.cause.cause.code, "ENOTFOUND");
+      return true;
+    });
   });
 });

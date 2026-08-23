@@ -21,7 +21,7 @@ function createClient({ torrents, trackersByHash }) {
 
 describe("processTorrents", () => {
   const rules = [
-    { match: "torrentleech", tag: "torrentleech" },
+    { match: "private", tag: "private" },
     { match: "example.com", tag: "example" },
   ];
 
@@ -35,7 +35,7 @@ describe("processTorrents", () => {
         },
       ],
       trackersByHash: {
-        abc: [{ url: "https://tracker.torrentleech.org/announce" }],
+        abc: [{ url: "https://tracker.private.org/announce" }],
       },
     });
 
@@ -43,14 +43,14 @@ describe("processTorrents", () => {
     await processTorrents({
       client,
       rules,
-      log: { info: (message) => logs.push(message) },
+      log: { info: (message, fields) => logs.push({ message, fields }) },
     });
 
     assert.deepEqual(client.added, [
-      { hash: "abc", tags: ["torrentleech"] },
+      { hash: "abc", tags: ["private"] },
     ]);
-    assert.match(logs[0], /Show\.S01E01/);
-    assert.match(logs[0], /torrentleech/);
+    assert.match(logs[0].message, /Show\.S01E01/);
+    assert.equal(logs[0].fields.tags, "private");
   });
 
   it("does not re-add a tag the torrent already has", async () => {
@@ -59,11 +59,11 @@ describe("processTorrents", () => {
         {
           hash: "abc",
           name: "Already Tagged",
-          tags: "sonarr, torrentleech",
+          tags: "sonarr, private",
         },
       ],
       trackersByHash: {
-        abc: [{ url: "https://tracker.torrentleech.org/announce" }],
+        abc: [{ url: "https://tracker.private.org/announce" }],
       },
     });
 
@@ -81,7 +81,7 @@ describe("processTorrents", () => {
       torrents: [{ hash: "xyz", name: "Movie", tags: "" }],
       trackersByHash: {
         xyz: [
-          { url: "https://tracker.torrentleech.org/announce" },
+          { url: "https://tracker.private.org/announce" },
           { url: "https://tracker.example.com/announce" },
         ],
       },
@@ -95,7 +95,7 @@ describe("processTorrents", () => {
 
     assert.equal(client.added.length, 1);
     assert.equal(client.added[0].hash, "xyz");
-    assert.deepEqual(client.added[0].tags.sort(), ["example", "torrentleech"]);
+    assert.deepEqual(client.added[0].tags.sort(), ["example", "private"]);
   });
 
   it("continues after a single torrent fails", async () => {

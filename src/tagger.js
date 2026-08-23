@@ -19,9 +19,9 @@ export async function processTorrents({
       }
 
       await client.addTags(torrent.hash, newTags);
-      log.info?.(`Tagged "${torrent.name}" -> ${newTags.join(", ")}`);
+      log.info?.(`Tagged "${torrent.name}"`, { tags: newTags.join(",") });
     } catch (error) {
-      log.error?.(`Failed processing "${torrent.name}": ${error.message}`);
+      log.error?.(`Failed processing "${torrent.name}"`, { error });
     }
   }
 }

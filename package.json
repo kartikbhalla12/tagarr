@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "description": "Tag qBittorrent torrents from tracker URLs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kartikbhalla12/tagarr.git"
+  },
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test test/*.test.js"

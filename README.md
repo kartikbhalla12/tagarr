@@ -6,33 +6,89 @@ Sidecar for the *arr stack. Polls qBittorrent, inspects torrent tracker URLs, an
 Sonarr / Radarr → qBittorrent → Tagarr → tracker tags
 ```
 
+Images are published for `linux/amd64` and `linux/arm64`.
+
 ## Run
+
+Create a `.env` next to your compose file (see `.env.example`):
+
+```
+QBIT_USERNAME=admin
+QBIT_PASSWORD=secret
+```
 
 ```yaml
 services:
   tagarr:
-    image: ghcr.io/YOUR_GITHUB_USERNAME/tagarr:latest
+    image: ghcr.io/kartikbhalla12/tagarr:latest
     container_name: tagarr
     restart: unless-stopped
     environment:
       QBIT_URL: "http://qbittorrent:8080"
-      QBIT_USERNAME: "dummy_username"
-      QBIT_PASSWORD: "dummy_password"
+      QBIT_USERNAME: "${QBIT_USERNAME}"
+      QBIT_PASSWORD: "${QBIT_PASSWORD}"
       CHECK_INTERVAL: "60"
+      LOG_LEVEL: "info"
       TRACKER_TAG_RULES: |
         [
-          { "match": "torrentleech", "tag": "torrentleech" }
+          { "match": "tracker.example.com", "tag": "example" }
         ]
-    networks:
-      - downloads
 ```
 
-qBittorrent's Web API authenticates with username/password and a session cookie. There is no static API key.
+Pin a release instead of `latest` if you want a fixed version:
+
+```yaml
+image: ghcr.io/kartikbhalla12/tagarr:1.0.0
+```
+
+If the GHCR package is private, run `docker login ghcr.io` on the host or make the package public.
+
+Username and password can be left empty if qBittorrent allows unauthenticated local clients.
+
+## Configuration
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `QBIT_URL` | yes | | qBittorrent Web UI base URL |
+| `QBIT_USERNAME` | no | | Web UI username |
+| `QBIT_PASSWORD` | no | | Web UI password |
+| `TRACKER_TAG_RULES` | yes | | JSON array of `{ "match", "tag" }` rules |
+| `CHECK_INTERVAL` | no | `60` | Seconds between scans |
+| `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, or `error` |
 
 `TRACKER_TAG_RULES` is a JSON array in Compose. Each `match` is a case-insensitive substring of the tracker URL.
 
-A TorrentLeech download that Sonarr already tagged `sonarr` becomes `sonarr, torrentleech`.
+A download from `tracker.example.com` that Sonarr already tagged `sonarr` becomes `sonarr, example`.
 
-Replace `YOUR_GITHUB_USERNAME` with the GitHub account that owns this repo. After the first publish, make the GHCR package public (or `docker login ghcr.io`) so the homelab can pull it.
+qBittorrent's Web API authenticates with username/password and a session cookie. There is no static API key.
 
-Username and password can be left empty if qBittorrent allows unauthenticated local clients.
+## Releases
+
+Every push to `master` publishes `ghcr.io/kartikbhalla12/tagarr:latest`.
+
+To publish a versioned image:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+That creates:
+
+```
+ghcr.io/kartikbhalla12/tagarr:1.0.0
+ghcr.io/kartikbhalla12/tagarr:1
+```
+
+You can also run the **Publish** workflow from the Actions tab (`workflow_dispatch`).
+
+## Troubleshooting
+
+Failed qBittorrent calls log the URL and the underlying cause.
+
+| Cause | Meaning |
+|---|---|
+| `ENOTFOUND` | Hostname does not resolve. Use a reachable `QBIT_URL` (host IP or published port) if Tagarr is not on the same Docker network as qBittorrent |
+| `ECONNREFUSED` | Host was found, but nothing is listening on that port |
+| `ETIMEDOUT` | Network path is blocked or the host is down |
+| `qBittorrent login failed` | Username or password is wrong |

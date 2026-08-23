@@ -12,7 +12,7 @@ export class QbitClient {
       return;
     }
 
-    const response = await this.fetchImpl(`${this.baseUrl}/api/v2/auth/login`, {
+    const response = await this.requestRaw(`${this.baseUrl}/api/v2/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -60,7 +60,7 @@ export class QbitClient {
   }
 
   async request(path, options = {}, retried = false) {
-    const response = await this.fetchImpl(`${this.baseUrl}/api/v2${path}`, {
+    const response = await this.requestRaw(`${this.baseUrl}/api/v2${path}`, {
       ...options,
       headers: {
         Referer: this.baseUrl,
@@ -80,5 +80,13 @@ export class QbitClient {
     }
 
     return response;
+  }
+
+  async requestRaw(url, options) {
+    try {
+      return await this.fetchImpl(url, options);
+    } catch (error) {
+      throw new Error(`qBittorrent request failed (${url})`, { cause: error });
+    }
   }
 }

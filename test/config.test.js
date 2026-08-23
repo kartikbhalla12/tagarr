@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { loadConfig } from "../src/config.js";
 
 const validRules = JSON.stringify([
-  { match: "torrentleech", tag: "torrentleech" },
+  { match: "example", tag: "example" },
 ]);
 
 describe("loadConfig", () => {
@@ -21,7 +21,7 @@ describe("loadConfig", () => {
       username: "admin",
       password: "secret",
       checkIntervalMs: 15_000,
-      rules: [{ match: "torrentleech", tag: "torrentleech" }],
+      rules: [{ match: "example", tag: "example" }],
     });
   });
 

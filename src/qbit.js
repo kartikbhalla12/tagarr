@@ -27,12 +27,12 @@ export class QbitClient {
     });
 
     const text = (await response.text()).trim();
-    if (text !== "Ok.") {
-      throw new Error(formatLoginFailure(response, text));
-    }
-
     const cookies = response.headers.getSetCookie?.() ?? [];
     this.cookie = cookies.map((cookie) => cookie.split(";")[0]).join("; ");
+
+    if (!isLoginSuccess(response, text, this.cookie)) {
+      throw new Error(formatLoginFailure(response, text));
+    }
   }
 
   async getTorrents() {
@@ -90,6 +90,18 @@ export class QbitClient {
       throw new Error(`qBittorrent request failed (${url})`, { cause: error });
     }
   }
+}
+
+function isLoginSuccess(response, text, cookie) {
+  if (text === "Ok.") {
+    return true;
+  }
+
+  if (response.status === 204) {
+    return true;
+  }
+
+  return response.ok && /(?:^|;\s*)SID=/i.test(cookie);
 }
 
 function formatLoginFailure(response, text) {

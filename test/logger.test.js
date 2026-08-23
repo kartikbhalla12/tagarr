@@ -98,8 +98,9 @@ describe("createLogger", () => {
     log.warn("careful");
     log.error("down");
 
-    assert.match(stdout[0], /\x1b\[36mINFO \x1b\[0m up/);
+    assert.match(stdout[0], /^2026-08-23T07:17:00.000Z \x1b\[36mINFO \x1b\[0m up/);
     assert.match(stdout[1], /\x1b\[33mWARN \x1b\[0m careful/);
     assert.match(stderr[0], /\x1b\[31mERROR\x1b\[0m down/);
+    assert.doesNotMatch(stdout[0], /\x1b\[2m/);
   });
 });

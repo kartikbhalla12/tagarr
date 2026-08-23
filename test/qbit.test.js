@@ -175,6 +175,22 @@ describe("QbitClient", () => {
     );
   });
 
+  it("accepts a 204 login with an empty body", async () => {
+    const client = new QbitClient({
+      url: "https://downloader.example",
+      username: "admin",
+      password: "secret",
+      fetchImpl: async () =>
+        new Response(null, {
+          status: 204,
+          headers: { "Set-Cookie": "SID=session-204; path=/" },
+        }),
+    });
+
+    await client.login();
+    assert.equal(client.cookie, "SID=session-204");
+  });
+
   it("includes a proxy HTML body in the login error", async () => {
     const client = new QbitClient({
       url: "https://downloader.example",

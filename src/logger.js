@@ -45,7 +45,6 @@ export function formatError(error) {
 }
 
 const RESET = "\x1b[0m";
-const DIM = "\x1b[2m";
 const LEVEL_COLORS = {
   debug: "\x1b[90m",
   info: "\x1b[36m",
@@ -86,9 +85,7 @@ export function createLogger({
     const styledLevel = useColor
       ? `${LEVEL_COLORS[name]}${levelLabel}${RESET}`
       : levelLabel;
-    const timestamp = useColor
-      ? `${DIM}${now().toISOString()}${RESET}`
-      : now().toISOString();
+    const timestamp = now().toISOString();
     const line = `${timestamp} ${styledLevel} ${message}${
       extras ? ` ${extras}` : ""
     }\n`;

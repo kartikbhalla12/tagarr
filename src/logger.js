@@ -44,13 +44,37 @@ export function formatError(error) {
   return parts.join(" -> ");
 }
 
+const RESET = "\x1b[0m";
+const DIM = "\x1b[2m";
+const LEVEL_COLORS = {
+  debug: "\x1b[90m",
+  info: "\x1b[36m",
+  warn: "\x1b[33m",
+  error: "\x1b[31m",
+};
+
+function shouldColor(color) {
+  if (color != null) {
+    return Boolean(color);
+  }
+
+  if (process.env.NO_COLOR != null && process.env.NO_COLOR !== "") {
+    return false;
+  }
+
+  const flag = String(process.env.LOG_COLOR ?? "true").toLowerCase();
+  return flag !== "false" && flag !== "0";
+}
+
 export function createLogger({
   level = process.env.LOG_LEVEL ?? "info",
+  color,
   now = () => new Date(),
   stdout = process.stdout,
   stderr = process.stderr,
 } = {}) {
   const minLevel = LEVELS[String(level).toLowerCase()] ?? LEVELS.info;
+  const useColor = shouldColor(color);
 
   function write(name, stream, message, fields) {
     if ((LEVELS[name] ?? LEVELS.info) < minLevel) {
@@ -58,7 +82,14 @@ export function createLogger({
     }
 
     const extras = formatFields(fields);
-    const line = `${now().toISOString()} ${name.toUpperCase().padEnd(5)} ${message}${
+    const levelLabel = name.toUpperCase().padEnd(5);
+    const styledLevel = useColor
+      ? `${LEVEL_COLORS[name]}${levelLabel}${RESET}`
+      : levelLabel;
+    const timestamp = useColor
+      ? `${DIM}${now().toISOString()}${RESET}`
+      : now().toISOString();
+    const line = `${timestamp} ${styledLevel} ${message}${
       extras ? ` ${extras}` : ""
     }\n`;
 

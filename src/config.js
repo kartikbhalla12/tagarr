@@ -17,8 +17,8 @@ export function loadConfig(env = process.env) {
 
   return {
     qbitUrl,
-    username: env.QBIT_USERNAME ?? "",
-    password: env.QBIT_PASSWORD ?? "",
+    username: String(env.QBIT_USERNAME ?? "").trim(),
+    password: String(env.QBIT_PASSWORD ?? "").trim(),
     checkIntervalMs: Number.isFinite(intervalSeconds) && intervalSeconds > 0
       ? intervalSeconds * 1000
       : 60_000,

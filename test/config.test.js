@@ -46,6 +46,18 @@ describe("loadConfig", () => {
     );
   });
 
+  it("trims qBittorrent credentials", () => {
+    const config = loadConfig({
+      QBIT_URL: "http://qbittorrent:8080",
+      QBIT_USERNAME: " admin \n",
+      QBIT_PASSWORD: " secret\n",
+      TRACKER_TAG_RULES: validRules,
+    });
+
+    assert.equal(config.username, "admin");
+    assert.equal(config.password, "secret");
+  });
+
   it("defaults the check interval to 60 seconds", () => {
     const config = loadConfig({
       QBIT_URL: "http://qbittorrent:8080",

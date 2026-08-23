@@ -14,9 +14,10 @@ export class QbitClient {
 
     const response = await this.requestRaw(`${this.baseUrl}/api/v2/auth/login`, {
       method: "POST",
+      redirect: "manual",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Referer: this.baseUrl,
+        Referer: `${this.baseUrl}/`,
         Origin: this.baseUrl,
       },
       body: new URLSearchParams({
@@ -27,7 +28,7 @@ export class QbitClient {
 
     const text = (await response.text()).trim();
     if (text !== "Ok.") {
-      throw new Error("qBittorrent login failed");
+      throw new Error(formatLoginFailure(response, text));
     }
 
     const cookies = response.headers.getSetCookie?.() ?? [];
@@ -63,7 +64,7 @@ export class QbitClient {
     const response = await this.requestRaw(`${this.baseUrl}/api/v2${path}`, {
       ...options,
       headers: {
-        Referer: this.baseUrl,
+        Referer: `${this.baseUrl}/`,
         Origin: this.baseUrl,
         ...(this.cookie ? { Cookie: this.cookie } : {}),
         ...options.headers,
@@ -89,4 +90,11 @@ export class QbitClient {
       throw new Error(`qBittorrent request failed (${url})`, { cause: error });
     }
   }
+}
+
+function formatLoginFailure(response, text) {
+  const body = text.replace(/\s+/g, " ").slice(0, 180) || "<empty>";
+  const location = response.headers.get("location");
+  const redirect = location ? ` location=${location}` : "";
+  return `qBittorrent login failed (${response.status}): ${body}${redirect}`;
 }

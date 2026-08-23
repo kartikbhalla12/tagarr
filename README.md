@@ -54,7 +54,7 @@ Username and password can be left empty if qBittorrent allows unauthenticated lo
 | `QBIT_PASSWORD` | no | | Web UI password |
 | `TRACKER_TAG_RULES` | yes | | JSON array of `{ "match", "tag" }` rules |
 | `CHECK_INTERVAL` | no | `60` | Seconds between scans |
-| `LOG_LEVEL` | no | `info` | `debug`, `info`, `warn`, or `error` |
+| `LOG_LEVEL` | no | `info` | `debug` (gray), `info` (cyan), `warn` (yellow), or `error` (red). Set `NO_COLOR=1` or `LOG_COLOR=false` to disable |
 
 `TRACKER_TAG_RULES` is a JSON array in Compose. Each `match` is a case-insensitive substring of the tracker URL.
 
@@ -91,4 +91,5 @@ Failed qBittorrent calls log the URL and the underlying cause.
 | `ENOTFOUND` | Hostname does not resolve. Use a reachable `QBIT_URL` (host IP or published port) if Tagarr is not on the same Docker network as qBittorrent |
 | `ECONNREFUSED` | Host was found, but nothing is listening on that port |
 | `ETIMEDOUT` | Network path is blocked or the host is down |
-| `qBittorrent login failed` | Username or password is wrong |
+| `qBittorrent login failed` | The Web UI rejected the login. The log now includes the HTTP status and body. `Fails.` means wrong Web UI credentials. HTML or a `location=` redirect means a reverse proxy / SSO is in front of qBittorrent |
+| Password with `$` | Compose interpolates `$`. Escape as `$$` or put the password in `.env` |

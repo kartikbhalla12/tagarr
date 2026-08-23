@@ -124,7 +124,7 @@ describe("QbitClient", () => {
     const login = mock.calls.find((call) => call.path === "/api/v2/auth/login");
     const info = mock.calls.find((call) => call.path === "/api/v2/torrents/info");
 
-    assert.equal(login.referer, mock.url);
+    assert.equal(login.referer, `${mock.url}/`);
     assert.match(info.cookie, /SID=session-1/);
   });
 
@@ -169,7 +169,28 @@ describe("QbitClient", () => {
       password: "wrong",
     });
 
-    await assert.rejects(() => client.login(), /qBittorrent login failed/);
+    await assert.rejects(
+      () => client.login(),
+      /qBittorrent login failed \(200\): Fails\./
+    );
+  });
+
+  it("includes a proxy HTML body in the login error", async () => {
+    const client = new QbitClient({
+      url: "https://downloader.example",
+      username: "admin",
+      password: "secret",
+      fetchImpl: async () =>
+        new Response("<html><title>Sign in</title></html>", {
+          status: 200,
+          headers: { "Content-Type": "text/html" },
+        }),
+    });
+
+    await assert.rejects(
+      () => client.login(),
+      /qBittorrent login failed \(200\): <html><title>Sign in<\/title><\/html>/
+    );
   });
 
   it("wraps a network failure with the request URL", async () => {

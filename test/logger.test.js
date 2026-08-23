@@ -27,6 +27,7 @@ describe("createLogger", () => {
     const stdout = [];
     const stderr = [];
     const log = createLogger({
+      color: false,
       now: () => new Date("2026-08-23T07:17:00.000Z"),
       stdout: { write: (line) => stdout.push(line) },
       stderr: { write: (line) => stderr.push(line) },
@@ -69,6 +70,7 @@ describe("createLogger", () => {
   it("writes debug lines when LOG_LEVEL is debug", () => {
     const stdout = [];
     const log = createLogger({
+      color: false,
       level: "debug",
       now: () => new Date("2026-08-23T07:17:00.000Z"),
       stdout: { write: (line) => stdout.push(line) },
@@ -80,5 +82,24 @@ describe("createLogger", () => {
     assert.deepEqual(stdout, [
       "2026-08-23T07:17:00.000Z DEBUG checking torrent hash=abc\n",
     ]);
+  });
+
+  it("colors info, warn, and error level labels", () => {
+    const stdout = [];
+    const stderr = [];
+    const log = createLogger({
+      color: true,
+      now: () => new Date("2026-08-23T07:17:00.000Z"),
+      stdout: { write: (line) => stdout.push(line) },
+      stderr: { write: (line) => stderr.push(line) },
+    });
+
+    log.info("up");
+    log.warn("careful");
+    log.error("down");
+
+    assert.match(stdout[0], /\x1b\[36mINFO \x1b\[0m up/);
+    assert.match(stdout[1], /\x1b\[33mWARN \x1b\[0m careful/);
+    assert.match(stderr[0], /\x1b\[31mERROR\x1b\[0m down/);
   });
 });

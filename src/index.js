@@ -47,6 +47,8 @@ export async function run(
   log.info("Starting tagarr", {
     url: config.qbitUrl,
     interval: `${config.checkIntervalMs / 1000}s`,
+    username: config.username || "<empty>",
+    password: config.password ? "set" : "empty",
   });
 
   for (const rule of config.rules) {
